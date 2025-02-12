@@ -6,6 +6,12 @@ import sanitizeMiddleware from "./middlewares/sanitizeMiddleware";
 import loggerMiddleware from "./middlewares/loggerMiddleware";
 import limiter from "./middlewares/limiter";
 import path from "path";
+import errorMiddleware from "./middlewares/errorMiddleware";
+import userRoute from "./routes/userRoute";
+import categoryRoute from "./routes/categoryRoute";
+import productRoute from "./routes/productRoute";
+import shopRoute from "./routes/shopRoute";
+import orderRoute from "./routes/orderRoute";
 
 const app = express();
 
@@ -22,5 +28,15 @@ app.use(helmet());
 app.use("/product", express.static(path.join(__dirname, "../public/uploads/product")));
 app.use("/category", express.static(path.join(__dirname, "../public/uploads/category")));
 app.use("/shop", express.static(path.join(__dirname, "../public/uploads/shop")));
+
+// Routes
+app.use("/api/user", userRoute);
+app.use("/api/category", categoryRoute);
+app.use("/api/product", productRoute);
+app.use("/api/shop", shopRoute);
+app.use("/api/order", orderRoute);
+
+// Error Handling Middleware
+app.use(errorMiddleware);
 
 export default app;
