@@ -4,6 +4,15 @@ import { OrderValidation } from "../validations/orderValidation";
 
 export class OrderController {
 
+  static async getSummary(req: Request, res: Response, next: NextFunction) {
+    try {
+      const data = await OrderService.getSummary();
+      res.json(data);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async getOrder(req: Request, res: Response, next: NextFunction) {
     try {
       const data = await OrderService.getOrder(req.query);
