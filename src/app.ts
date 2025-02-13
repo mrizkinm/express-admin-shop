@@ -12,11 +12,14 @@ import categoryRoute from "./routes/categoryRoute";
 import productRoute from "./routes/productRoute";
 import shopRoute from "./routes/shopRoute";
 import orderRoute from "./routes/orderRoute";
+import customerRoute from "./routes/customerRoute";
+import cookieParser from "cookie-parser";
 
 const app = express();
 
 // Middleware
 app.use(cors({ origin: 'http://localhost:3001' }));
+app.use(cookieParser());
 app.use(xssClean());
 app.use(sanitizeMiddleware);
 app.use(express.json());
@@ -35,6 +38,7 @@ app.use("/api/category", categoryRoute);
 app.use("/api/product", productRoute);
 app.use("/api/shop", shopRoute);
 app.use("/api/order", orderRoute);
+app.use("/api/customer", customerRoute);
 
 // Error Handling Middleware
 app.use(errorMiddleware);
