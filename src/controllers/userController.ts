@@ -21,13 +21,6 @@ export class UserController {
       }
 
       const response = await UserService.login(req.body);
-
-      // Set refresh token sebagai cookie
-      res.cookie("token", response.token, {
-        httpOnly: true,
-        sameSite: "strict",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 hari
-      });
       res.json({ token: response.token, ...response.user });
     } catch (error) {
       next(error);
@@ -39,24 +32,18 @@ export class UserController {
       // Mengambil Authorization Header
       const refreshToken = req.header("Authorization")?.split(" ")[1];
       if (!refreshToken) {
-        res.status(401).json({ error: "Unauthorized: No token provided" });
+        res.status(401).json({ errors: "Unauthorized: No token provided" });
         return;
       }
 
       const response = await UserService.logout(refreshToken);
-      // Hapus cookie di browser
-      res.clearCookie("refreshToken", {
-        httpOnly: true,
-        secure: true,
-        sameSite: "strict",
-      });
       res.json(response);
     } catch (error) {
       next(error);
     }
   }
 
-  static async account(req: Request, res: Response, next: NextFunction) {
+  static async profile(req: Request, res: Response, next: NextFunction) {
     try {
       const result = UserValidation.updateAccount.safeParse(req.body);
 
@@ -71,7 +58,7 @@ export class UserController {
         res.status(400).json({ errors: simplifiedErrors });
       }
 
-      const newUser = await UserService.account(req.body);
+      const newUser = await UserService.profile(req.body);
       res.json(newUser);
     } catch (error) {
       next(error);
