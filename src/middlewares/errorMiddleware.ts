@@ -5,12 +5,12 @@ const errorMiddleware = (err: any, req: Request, res: Response, next: NextFuncti
   const message = err.message || 'Something went wrong.';
   if (process.env.NODE_ENV === 'production') {
     res.status(status).json({
-      message: message,
+      errors: message,
     });
   } else {
     // Di development, tampilkan pesan error lengkap dengan stack trace
     res.status(status).json({
-      message: message,
+      errors: message,
       stack: err.stack, // Ini akan menampilkan stack trace di development
     });
   }
