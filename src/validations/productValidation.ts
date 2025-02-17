@@ -7,8 +7,8 @@ export class ProductValidation {
     images: z.array(z.any()),
     price: z.coerce.number().min(1),
     categoryId: z.coerce.number().min(1),
-    isFeatured: z.string().optional(),
-    isArchived: z.string().optional(),
+    isFeatured: z.boolean(),
+    isArchived: z.boolean(),
     description: z.string().min(1),
     quantity: z.coerce.number().min(0),
   });
@@ -18,8 +18,8 @@ export class ProductValidation {
     images: z.array(z.any()).optional(),
     price: z.coerce.number().min(1).optional(),
     categoryId: z.coerce.number().min(1).optional(),
-    isFeatured: z.string().optional().optional(),
-    isArchived: z.string().optional().optional(),
+    isFeatured: z.boolean().optional(),
+    isArchived: z.boolean().optional(),
     description: z.string().min(1).optional(),
     quantity: z.coerce.number().min(0).optional(),
   });
