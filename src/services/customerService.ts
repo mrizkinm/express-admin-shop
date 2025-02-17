@@ -95,6 +95,6 @@ export class CustomerService {
       data: updateData
     })
 
-    return { msg: "Success to update data" };
+    return { message: "Success to update data" };
   }
 }

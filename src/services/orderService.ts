@@ -117,7 +117,7 @@ export class OrderService {
       }
     }
 
-    return { msg: `Success to ${action} order ${id}`, status: status }
+    return { message: `Success to ${action} order ${id}`, status: status }
   }
 
   private static async updateProductStockFromOrder(id: number, items: any[]) {
