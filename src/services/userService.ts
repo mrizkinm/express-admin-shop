@@ -1,10 +1,51 @@
 import prisma from "../config/prisma";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import { ResponseError } from "../errors/responseError";
 
 export class UserService {
 
-  static async account(req: { name?: string, email?: string, id: number}) {
+  static async login(req: { email: string, password: string }) {
+    const user = await prisma.user.findUnique({
+      where: { email: req.email },
+    });
+
+    if (!user || !(await bcrypt.compare(req.password, user.password))) {
+      throw new ResponseError(401, "Username or password is wrong");
+    }
+
+    // Generate token
+    const tokenJwt = jwt.sign({ id: user.id, name: user.name, email: user.email }, process.env.JWT_SECRET as string, { expiresIn: "7d" });
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        token: tokenJwt
+      }
+    });
+    
+    const { password, token, ...userWithoutPass } = user;
+    return { token: tokenJwt, user: userWithoutPass };
+  }
+
+  static async logout(refreshToken: string) {
+    const storedToken  = await prisma.user.findFirst({
+      where: { token: refreshToken },
+    });
+
+    if (!storedToken) {
+      throw new ResponseError(401, "Invalid refresh token");
+    }
+
+    await prisma.user.updateMany({
+      where: { token: refreshToken },
+      data: { token: null },
+    });
+  
+    return { message: 'Logout berhasil' };
+  }
+
+  static async profile(req: { name?: string, email?: string, id: number}) {
     // Cocokkan token dengan token di database
     const findUser = await prisma.user.findUnique({
       where: { id: req.id },
