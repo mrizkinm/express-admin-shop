@@ -41,9 +41,6 @@ export class CategoryService {
     const category = await prisma.category.findUnique({
       where: {
         id: parseInt(categoryId)
-      },
-      include: {
-        products: true
       }
     })
     return category;
@@ -78,13 +75,10 @@ export class CategoryService {
     }
 
     // Simpan semua gambar dari Base64 menjadi file
-    const imageUrls = images.map((base64: string) => {
-      const fileName = this.saveBase64Image(
-        base64,
-        uploadFolder
-      );
+    const imageUrls = await Promise.all(images.map(async (base64: string) => {
+      const fileName = await this.saveBase64Image(base64, uploadFolder);
       return `${protocol}://${host}/uploads/${fileName}`;
-    });
+    }));
 
     // Mulai transaksi Prisma
     const category = await prisma.category.create({
@@ -101,7 +95,7 @@ export class CategoryService {
     const updateData = Object.fromEntries(
       Object.entries(req).filter(([_, value]) => value !== undefined && value !== "")
     );
-    
+
     await prisma.category.updateMany({
       where: {
         id: parseInt(categoryId)
@@ -109,6 +103,6 @@ export class CategoryService {
       data: updateData
     })
 
-    return { msg: "Success to update data" };
+    return { message: "Success to update data" };
   }
 }
