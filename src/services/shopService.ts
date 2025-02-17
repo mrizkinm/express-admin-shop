@@ -35,6 +35,9 @@ export class ShopService {
       Object.entries(req).filter(([_, value]) => value !== undefined && value !== "")
     );
 
+    // Hapus images dari updateData
+    delete updateData.images;
+
     // Tentukan lokasi penyimpanan
     const uploadFolder = path.join(__dirname, "../../public/uploads/shop");
 
@@ -44,16 +47,15 @@ export class ShopService {
     }
 
     // Simpan semua gambar dari Base64 menjadi file
-    const imageUrls = req.images?.map((base64: string) => {
-      const fileName = this.saveBase64Image(
-        base64,
-        uploadFolder
-      );
-      return `${protocol}://${host}/uploads/${fileName}`;
-    });
+    const imageUrls = req.images?.length
+    ? await Promise.all(req.images.map(async (base64: string) => {
+        const fileName = await this.saveBase64Image(base64, uploadFolder);
+        return `${protocol}://${host}/shop/${fileName}`;
+    }))
+    : [];
 
     // Jika ada gambar, tambahkan ke updateData
-    if (imageUrls?.length) {
+    if (imageUrls.length > 0) {
       updateData.image = imageUrls[0]; // Menyimpan hanya gambar pertama
     }
 
