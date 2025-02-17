@@ -4,3 +4,6 @@ node_modules
 prisma/migrations
 prisma/schema.prisma
 dist
+public/uploads/category/*
+public/uploads/product/*
+public/uploads/shop/*
