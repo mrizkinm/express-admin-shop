@@ -2,6 +2,15 @@ import {z, ZodType} from "zod";
 
 export class UserValidation {
 
+  static readonly login: ZodType = z.object({
+    email: z.string().email("Email tidak valid").min(1, "Email tidak boleh kosong"),
+    password: z.string().min(6, "Password harus memiliki minimal 6 karakter"),
+  });
+
+  static readonly logout: ZodType = z.object({
+    id: z.number().int()
+  });
+
   static readonly updateAccount: ZodType = z.object({
     name: z.string().min(3, { message: 'Nama minimal 3 karakter' }).max(50, { message: 'Nama maksimal 50 karakter' }).optional(),
     email: z.string().email({ message: 'Format email tidak valid' }).optional(),
