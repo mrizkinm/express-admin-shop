@@ -57,7 +57,8 @@ export class ProductService {
         id: parseInt(productId)
       },
       include: {
-        category: true
+        category: true,
+        images: true
       }
     })
     return product;
@@ -79,7 +80,7 @@ export class ProductService {
     return fileName; // Kembalikan nama file
   }
 
-  static async addProduct(req: { name: string, price: string, categoryId: string, description: string, isFeatured: string, isArchived: string, quantity: string, images: any[] }, protocol: any, host: any) {
+  static async addProduct(req: { name: string, price: number, categoryId: number, description: string, isFeatured: boolean, isArchived: boolean, quantity: number, images: any[] }, protocol: any, host: any) {
     const name = req.name;
     const price = req.price;
     const categoryId = req.categoryId;
@@ -102,23 +103,20 @@ export class ProductService {
       const product = await tx.product.create({
         data: {
           name,
-          categoryId: parseInt(categoryId),
-          price: parseInt(price),
-          quantity: parseInt(quantity),
+          categoryId: categoryId,
+          price: price,
+          quantity: quantity,
           description,
-          isFeatured: isFeatured === "true", // Mengkonversi dari string
-          isArchived: isArchived === "true", // Mengkonversi dari string
+          isFeatured: isFeatured, // Mengkonversi dari string
+          isArchived: isArchived, // Mengkonversi dari string
         },
       });
 
-       // Simpan semua gambar dari Base64 menjadi file
-       const imageUrls = images.map((base64: string) => {
-        const fileName = this.saveBase64Image(
-          base64,
-          uploadFolder
-        );
+      // Simpan semua gambar dari Base64 menjadi file
+      const imageUrls = await Promise.all(images.map(async (base64: string) => {
+        const fileName = await this.saveBase64Image(base64, uploadFolder);
         return `${protocol}://${host}/uploads/${fileName}`;
-      });
+      }));
 
       // Simpan gambar ke database
       if (imageUrls.length > 0) {
@@ -136,10 +134,12 @@ export class ProductService {
     return result
   }
 
-  static async updateProduct(req: { name?: string, price?: string, categoryId?: string, description?: string, isFeatured?: string, isArchived?: string, quantity?: string }, productId: string) {
+  static async updateProduct(req: { name?: string, price?: number, categoryId?: number, description?: string, isFeatured: boolean, isArchived: boolean, quantity: number }, productId: string) {
     const updateData = Object.fromEntries(
       Object.entries(req).filter(([_, value]) => value !== undefined && value !== "")
     );
+    
+    delete updateData.images;
 
     await prisma.product.updateMany({
       where: {
@@ -148,6 +148,6 @@ export class ProductService {
       data: updateData
     })
 
-    return { msg: "Success to update data" };
+    return { message: "Success to update data" };
   }
 }
