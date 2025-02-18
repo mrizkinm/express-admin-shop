@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import xssClean from "xss-clean";
@@ -14,8 +14,10 @@ import shopRoute from "./routes/shopRoute";
 import orderRoute from "./routes/orderRoute";
 import customerRoute from "./routes/customerRoute";
 import cookieParser from "cookie-parser";
+import { setupSwagger } from "./config/swagger";
 
 const app = express();
+setupSwagger(app);
 
 // Middleware
 app.use(cors({ origin: 'http://localhost:3001' }));
@@ -42,5 +44,9 @@ app.use("/api/customer", customerRoute);
 
 // Error Handling Middleware
 app.use(errorMiddleware);
+
+app.get("/", (req: Request, res: Response) => {
+  res.status(403).json({ errors: "Forbidden" });
+});
 
 export default app;
