@@ -19,8 +19,11 @@ import { setupSwagger } from "./config/swagger";
 const app = express();
 setupSwagger(app);
 
+app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ limit: '5mb', extended: true }));
+
 // Middleware
-app.use(cors({ origin: 'http://localhost:3001' }));
+app.use(cors({ origin: 'http://localhost:3001', credentials: true }));
 app.use(cookieParser());
 app.use(xssClean());
 app.use(sanitizeMiddleware);
