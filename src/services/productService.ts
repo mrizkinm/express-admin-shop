@@ -5,10 +5,11 @@ import fs from "fs";
 
 export class ProductService {
   static async getProduct(req: {page?: string, limit?: string, categories?: any, search?: string}) {
-    const page =  req.page ? Number(req.page) : 1;
-    const limit =  req.limit ? Number(req.limit) : 10;
-    const categories =  req.categories ? req.categories : undefined;
-    const search =  req.search ? req.search : undefined;
+    const page =  req.page ? Number(req.page) : undefined;
+    const limit =  req.limit ? Number(req.limit) : undefined;
+    const categories =  req.categories || undefined;
+    const search =  req.search || undefined;
+    const skip = page && limit ? (page - 1) * limit : undefined;
 
     // Convert categories string to array if exists
     const categoriesArray = categories ? categories.split(".").map(Number) : [];
@@ -33,7 +34,7 @@ export class ProductService {
     const products = await prisma.product.findMany({
       where: whereClause,
       include: { category: true, images: true },
-      skip: (page - 1) * limit,
+      skip: skip,
       take: limit,
       orderBy: { createdAt: "asc" },
     });
@@ -44,7 +45,7 @@ export class ProductService {
     return {
       time: currentTime,
       total: totalProducts,
-      offset: (page - 1) * limit,
+      offset: skip,
       limit,
       data: products,
     };
@@ -115,7 +116,7 @@ export class ProductService {
       // Simpan semua gambar dari Base64 menjadi file
       const imageUrls = await Promise.all(images.map(async (base64: string) => {
         const fileName = await this.saveBase64Image(base64, uploadFolder);
-        return `${protocol}://${host}/uploads/${fileName}`;
+        return `${protocol}://${host}/product/${fileName}`;
       }));
 
       // Simpan gambar ke database

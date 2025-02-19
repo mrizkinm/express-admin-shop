@@ -33,10 +33,11 @@ export class OrderService {
   }
 
   static async getOrder(req: {page?: string, limit?: string, status?: string, search?: string}) {
-    const page =  req.page ? Number(req.page) : 1;
-    const limit =  req.limit ? Number(req.limit) : 10;
-    const status =  req.status ? req.status : undefined;
-    const search =  req.search ? req.search : undefined;
+    const page =  req.page ? Number(req.page) : undefined;
+    const limit =  req.limit ? Number(req.limit) : undefined;
+    const status =  req.status || undefined;
+    const search =  req.search || undefined;
+    const skip = page && limit ? (page - 1) * limit : undefined;
 
     // Convert status string to array if exists
     const statusArray = status ? status.split(".").map(String) : [];
@@ -59,8 +60,8 @@ export class OrderService {
     const total = await prisma.order.count({ where: whereClause });
     const orders = await prisma.order.findMany({
       where: whereClause,
-      include: { items: true, customer: true },
-      skip: (page - 1) * limit,
+      include: { customer: true },
+      skip: skip,
       take: limit,
       orderBy: { createdAt: "asc" },
     });
@@ -71,7 +72,7 @@ export class OrderService {
     return {
       time: currentTime,
       total: total,
-      offset: (page - 1) * limit,
+      offset: skip,
       limit,
       data: orders,
     };

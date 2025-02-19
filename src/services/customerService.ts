@@ -5,9 +5,10 @@ import bcrypt from "bcrypt";
 export class CustomerService {
 
   static async getCustomer(req: {page?: string, limit?: string, search?: string}) {
-    const page =  req.page ? Number(req.page) : 1;
-    const limit =  req.limit ? Number(req.limit) : 10;
-    const search =  req.search ? req.search : undefined;
+    const page =  req.page ? Number(req.page) : undefined;
+    const limit =  req.limit ? Number(req.limit) : undefined;
+    const search =  req.search || undefined;
+    const skip = page && limit ? (page - 1) * limit : undefined;
 
     // Query products from database
     const whereClause = {
@@ -27,8 +28,7 @@ export class CustomerService {
     const total = await prisma.customer.count({ where: whereClause });
     const customers = await prisma.customer.findMany({
       where: whereClause,
-      include: { orders: true },
-      skip: (page - 1) * limit,
+      skip: skip,
       take: limit,
       orderBy: { createdAt: "asc" },
     });
@@ -39,7 +39,7 @@ export class CustomerService {
     return {
       time: currentTime,
       total: total,
-      offset: (page - 1) * limit,
+      offset: skip,
       limit,
       data: customers,
     };
@@ -49,9 +49,6 @@ export class CustomerService {
     const customer = await prisma.customer.findUnique({
       where: {
         id: parseInt(customerId)
-      },
-      include: {
-        orders: true
       }
     })
     return customer;

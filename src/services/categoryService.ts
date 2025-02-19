@@ -6,9 +6,10 @@ import fs from "fs";
 export class CategoryService {
 
   static async getCategory(req: {page?: string, limit?: string, search?: string}) {
-    const page =  req.page ? Number(req.page) : 1;
-    const limit =  req.limit ? Number(req.limit) : 10;
-    const search =  req.search ? req.search : undefined;
+    const page =  req.page ? Number(req.page) : undefined;
+    const limit =  req.limit ? Number(req.limit) : undefined;
+    const search =  req.search || undefined;
+    const skip = page && limit ? (page - 1) * limit : undefined;
     
     // Query products from database
     const whereClause = {
@@ -20,7 +21,7 @@ export class CategoryService {
     const total = await prisma.category.count({ where: whereClause });
     const categories = await prisma.category.findMany({
       where: whereClause,
-      skip: (page - 1) * limit,
+      skip: skip,
       take: limit,
       orderBy: { createdAt: "asc" },
     });
@@ -31,7 +32,7 @@ export class CategoryService {
     return {
       time: currentTime,
       total: total,
-      offset: (page - 1) * limit,
+      offset: skip,
       limit,
       data: categories,
     };
@@ -77,7 +78,7 @@ export class CategoryService {
     // Simpan semua gambar dari Base64 menjadi file
     const imageUrls = await Promise.all(images.map(async (base64: string) => {
       const fileName = await this.saveBase64Image(base64, uploadFolder);
-      return `${protocol}://${host}/uploads/${fileName}`;
+      return `${protocol}://${host}/category/${fileName}`;
     }));
 
     // Mulai transaksi Prisma
