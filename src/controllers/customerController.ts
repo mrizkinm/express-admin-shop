@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { CustomerService } from "../services/customerService";
 import { CustomerValidation } from "../validations/customerValidation";
+import { ResponseError } from "../errors/responseError";
 
 export class CustomerController {
 
@@ -17,7 +18,7 @@ export class CustomerController {
     try {
       const customerId = req.params.id;
       if (!customerId) {
-        res.status(400).json({ errors: "Invalid input" });
+        throw new ResponseError(400, "Invalid input");
       }
 
       const data = await CustomerService.getDetailCustomer(customerId);
@@ -39,7 +40,7 @@ export class CustomerController {
           Object.entries(errors).map(([key, value]) => [key, value?.[0] || 'Invalid value'])
         );
   
-        res.status(400).json({ errors: simplifiedErrors });
+        throw new ResponseError(400, simplifiedErrors);
       }
 
       const response = await CustomerService.addCustomer(req.body);
@@ -53,7 +54,7 @@ export class CustomerController {
     try {
       const customerId = req.params.id;
       if (!customerId) {
-        res.status(400).json({ errors: "Invalid input" });
+        throw new ResponseError(400, "Invalid input");
       }
 
       const result = CustomerValidation.updateCustomer.safeParse(req.body);
@@ -66,7 +67,7 @@ export class CustomerController {
           Object.entries(errors).map(([key, value]) => [key, value?.[0] || 'Invalid value'])
         );
   
-        res.status(400).json({ errors: simplifiedErrors });
+        throw new ResponseError(400, simplifiedErrors);
       }
 
       const response = await CustomerService.updateCustomer(req.body, customerId);

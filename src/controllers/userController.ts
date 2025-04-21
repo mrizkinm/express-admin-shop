@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { UserService } from "../services/userService";
 import { UserValidation } from "../validations/userValidation";
+import { ResponseError } from "../errors/responseError";
 
 export class UserController {
 
@@ -16,8 +17,7 @@ export class UserController {
           Object.entries(errors).map(([key, value]) => [key, value?.[0] || 'Invalid value'])
         );
   
-        res.status(400).json({ errors: simplifiedErrors });
-        return;
+        throw new ResponseError(400, simplifiedErrors);
       }
 
       const response = await UserService.login(req.body);
@@ -32,8 +32,7 @@ export class UserController {
       // Mengambil Authorization Header
       const refreshToken = req.header("Authorization")?.split(" ")[1];
       if (!refreshToken) {
-        res.status(401).json({ errors: "Unauthorized: No token provided" });
-        return;
+        throw new ResponseError(401, "Unauthorized: No token provided");
       }
 
       const response = await UserService.logout(refreshToken);
@@ -55,7 +54,7 @@ export class UserController {
           Object.entries(errors).map(([key, value]) => [key, value?.[0] || 'Invalid value'])
         );
   
-        res.status(400).json({ errors: simplifiedErrors });
+        throw new ResponseError(400, simplifiedErrors);
       }
 
       const newUser = await UserService.profile(req.body);
@@ -77,7 +76,7 @@ export class UserController {
           Object.entries(errors).map(([key, value]) => [key, value?.[0] || 'Invalid value'])
         );
   
-        res.status(400).json({ errors: simplifiedErrors });
+        throw new ResponseError(400, simplifiedErrors);
       }
 
       const newUser = await UserService.changePassword(req.body);

@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { ShopService } from "../services/shopService";
 import { ShopValidation } from "../validations/shopValidation";
+import { ResponseError } from "../errors/responseError";
 
 export class ShopController {
 
@@ -25,7 +26,7 @@ export class ShopController {
           Object.entries(errors).map(([key, value]) => [key, value?.[0] || 'Invalid value'])
         );
 
-        res.status(400).json({ errors: simplifiedErrors });
+        throw new ResponseError(400, simplifiedErrors);
       }
 
       const response = await ShopService.updateShop(req.body, req.protocol, req.get('host'));

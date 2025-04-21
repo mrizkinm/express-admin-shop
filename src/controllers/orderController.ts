@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { OrderService } from "../services/orderService";
 import { OrderValidation } from "../validations/orderValidation";
+import { ResponseError } from "../errors/responseError";
 
 export class OrderController {
 
@@ -26,7 +27,7 @@ export class OrderController {
     try {
       const orderId = req.params.id;
       if (!orderId) {
-        res.status(400).json({ errors: "Invalid input" });
+        throw new ResponseError(400, "Invalid input");
       }
 
       const data = await OrderService.getDetailOrder(orderId);
@@ -48,7 +49,7 @@ export class OrderController {
           Object.entries(errors).map(([key, value]) => [key, value?.[0] || 'Invalid value'])
         );
   
-        res.status(400).json({ errors: simplifiedErrors });
+        throw new ResponseError(400, simplifiedErrors);
       }
 
       const response = await OrderService.action(req.body);
