@@ -7,3 +7,4 @@ dist
 public/uploads/category/*
 public/uploads/product/*
 public/uploads/shop/*
+logs
