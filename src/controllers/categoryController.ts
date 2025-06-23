@@ -30,6 +30,10 @@ export class CategoryController {
 
   static async addCategory(req: Request, res: Response, next: NextFunction) {
     try {
+      if (!req.files || req.files.length === 0) {
+        throw new ResponseError(400, { images: "Image is required"} );
+      }
+      
       const result = CategoryValidation.addCategory.safeParse(req.body);
 
       if (!result.success) {
@@ -43,7 +47,7 @@ export class CategoryController {
         throw new ResponseError(400, simplifiedErrors);
       }
 
-      const response = await CategoryService.addCategory(req.body, req.protocol, req.get('host'));
+      const response = await CategoryService.addCategory(req.body, req.files as Express.Multer.File[], req.protocol, req.get('host'));
       res.json(response);
     } catch (error) {
       next(error);
@@ -70,7 +74,7 @@ export class CategoryController {
         throw new ResponseError(400, simplifiedErrors);
       }
 
-      const response = await CategoryService.updateCategory(req.body, categoryId);
+      const response = await CategoryService.updateCategory(req.body, categoryId, req.files as Express.Multer.File[], req.protocol, req.get('host'));
       res.json(response);
     } catch (error) {
       next(error);

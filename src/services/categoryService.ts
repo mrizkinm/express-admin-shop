@@ -47,25 +47,24 @@ export class CategoryService {
     return category;
   }
 
-  private static async saveBase64Image(base64String: string, folder: string) {
-    const matches = base64String.match(/^data:image\/([a-zA-Z]+);base64,(.+)$/);
-    if (!matches) {
-      throw new ResponseError(400, "Invalid Base64 format");
-    }
+  // private static async saveBase64Image(base64String: string, folder: string) {
+  //   const matches = base64String.match(/^data:image\/([a-zA-Z]+);base64,(.+)$/);
+  //   if (!matches) {
+  //     throw new ResponseError(400, "Invalid Base64 format");
+  //   }
   
-    const ext = matches[1]; // Ekstensi file (png, jpg, dll.)
-    const base64Data = matches[2]; // Data Base64 tanpa prefix
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`; // Nama file unik
-    const filePath = path.join(folder, fileName);
+  //   const ext = matches[1]; // Ekstensi file (png, jpg, dll.)
+  //   const base64Data = matches[2]; // Data Base64 tanpa prefix
+  //   const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`; // Nama file unik
+  //   const filePath = path.join(folder, fileName);
   
-    fs.writeFileSync(filePath, Buffer.from(base64Data, "base64"));
+  //   fs.writeFileSync(filePath, Buffer.from(base64Data, "base64"));
   
-    return fileName; // Kembalikan nama file
-  }
+  //   return fileName; // Kembalikan nama file
+  // }
 
-  static async addCategory(req: { name: string, images: any[] }, protocol: any, host: any) {
+  static async addCategory(req: { name: string }, files: Express.Multer.File[], protocol: any, host: any) {
     const { name } = req;
-    const images = req.images;
 
     // Tentukan lokasi penyimpanan
     const uploadFolder = path.join(__dirname, "../../public/uploads/category");
@@ -75,11 +74,17 @@ export class CategoryService {
       fs.mkdirSync(uploadFolder, { recursive: true });
     }
 
-    // Simpan semua gambar dari Base64 menjadi file
-    const imageUrls = await Promise.all(images.map(async (base64: string) => {
-      const fileName = await this.saveBase64Image(base64, uploadFolder);
-      return `${protocol}://${host}/category/${fileName}`;
-    }));
+    const imageUrls: string[] = [];
+
+    for (const file of files) {
+      const ext = path.extname(file.originalname);
+      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`;
+      const filePath = path.join(uploadFolder, fileName);
+
+      fs.writeFileSync(filePath, file.buffer);
+
+      imageUrls.push(`${protocol}://${host}/category/${fileName}`);
+    }
 
     // Mulai transaksi Prisma
     const category = await prisma.category.create({
@@ -92,10 +97,34 @@ export class CategoryService {
     return category;
   }
 
-  static async updateCategory(req: {name?: string}, categoryId: string) {
+  static async updateCategory(req: {name?: string}, categoryId: string, files?: Express.Multer.File[], protocol?: any, host?: any) {
     const updateData = Object.fromEntries(
       Object.entries(req).filter(([_, value]) => value !== undefined && value !== "")
     );
+
+    if (files) {
+      // Tentukan lokasi penyimpanan
+      const uploadFolder = path.join(__dirname, "../../public/uploads/category");
+
+      // Pastikan folder ada
+      if (!fs.existsSync(uploadFolder)) {
+        fs.mkdirSync(uploadFolder, { recursive: true });
+      }
+
+      const imageUrls: string[] = [];
+
+      for (const file of files) {
+        const ext = path.extname(file.originalname);
+        const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`;
+        const filePath = path.join(uploadFolder, fileName);
+
+        fs.writeFileSync(filePath, file.buffer);
+
+        imageUrls.push(`${protocol}://${host}/category/${fileName}`);
+      }
+
+      updateData.image = imageUrls[0]; // Update hanya dengan gambar pertama
+    }
 
     await prisma.category.updateMany({
       where: {

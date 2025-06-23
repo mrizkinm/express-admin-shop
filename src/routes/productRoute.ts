@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { ProductController } from "../controllers/productController";
 import authMiddleware from "../middlewares/authMiddleware";
+import { uploadImages } from "../utils/multer";
 
 const router = Router();
 
@@ -277,7 +278,7 @@ router.get("/:id", authMiddleware, ProductController.getDetailProduct);
  * /api/product:
  *   post:
  *     summary: Create a new product
- *     description: Adds a new product with base64-encoded images.
+ *     description: Adds a new product with image uploads via FormData.
  *     tags:
  *       - Product
  *     security:
@@ -285,7 +286,7 @@ router.get("/:id", authMiddleware, ProductController.getDetailProduct);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             required:
@@ -305,9 +306,8 @@ router.get("/:id", authMiddleware, ProductController.getDetailProduct);
  *                 type: array
  *                 items:
  *                   type: string
- *                   format: base64
- *                 maxItems: 5
- *                 example: ["data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAA..."]
+ *                   format: binary
+ *                 description: "Up to 5 image files"
  *               price:
  *                 type: integer
  *                 example: 1600000
@@ -369,7 +369,7 @@ router.get("/:id", authMiddleware, ProductController.getDetailProduct);
  *                   type: array
  *                   items:
  *                     type: string
- *                   example: ["http://example.com/1739866214580-giv42m.png"]
+ *                   example: ["http://localhost:3003/uploads/product/1739866214580-giv42m.png"]
  *       400:
  *         description: Invalid input
  *         content:
@@ -381,7 +381,7 @@ router.get("/:id", authMiddleware, ProductController.getDetailProduct);
  *                   type: string
  *                   example: "Invalid input"
  *       401:
- *         description: "Invalid token"
+ *         description: Invalid token
  *         content:
  *           application/json:
  *             schema:
@@ -401,14 +401,14 @@ router.get("/:id", authMiddleware, ProductController.getDetailProduct);
  *                   type: string
  *                   example: "Something went wrong"
  */
-router.post("/", authMiddleware, ProductController.addProduct);
+router.post("/", authMiddleware, uploadImages, ProductController.addProduct);
 
 /**
  * @swagger
  * /api/product/{productId}:
  *   patch:
  *     summary: Update product information
- *     description: Update the details of a product based on the provided request body.
+ *     description: Update the details of a product based on the provided form data.
  *     tags:
  *       - Product
  *     security:
@@ -423,38 +423,39 @@ router.post("/", authMiddleware, ProductController.addProduct);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
  *               name:
  *                 type: string
- *                 description: Name of the product
  *                 example: "RG Sazabi V2"
  *               price:
- *                 type: integer
- *                 description: Price of the product in the local currency
- *                 example: 1600000
+ *                 type: string
+ *                 example: "1600000"
  *               categoryId:
- *                 type: integer
- *                 description: ID of the category to which the product belongs
- *                 example: 21
+ *                 type: string
+ *                 example: "21"
  *               isFeatured:
- *                 type: boolean
- *                 description: Whether the product is featured or not
- *                 example: false
+ *                 type: string
+ *                 enum: ["true", "false"]
+ *                 example: "false"
  *               isArchived:
- *                 type: boolean
- *                 description: Whether the product is archived or not
- *                 example: false
+ *                 type: string
+ *                 enum: ["true", "false"]
+ *                 example: "false"
  *               description:
  *                 type: string
- *                 description: Description of the product
  *                 example: "rg sazabi ver 2"
  *               quantity:
- *                 type: integer
- *                 description: Available stock quantity of the product
- *                 example: 32
+ *                 type: string
+ *                 example: "32"
+ *               images:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ *                 description: Multiple image files
  *     responses:
  *       200:
  *         description: Success to update data
@@ -463,9 +464,12 @@ router.post("/", authMiddleware, ProductController.addProduct);
  *             schema:
  *               type: object
  *               properties:
- *                 message:
- *                   type: string
- *                   example: Success to update data
+ *                 product:
+ *                   type: object
+ *                 imageUrls:
+ *                   type: array
+ *                   items:
+ *                     type: string
  *       400:
  *         description: Invalid input
  *         content:
@@ -477,7 +481,7 @@ router.post("/", authMiddleware, ProductController.addProduct);
  *                   type: string
  *                   example: "Invalid input"
  *       401:
- *         description: "Invalid token"
+ *         description: Invalid token
  *         content:
  *           application/json:
  *             schema:
@@ -497,6 +501,6 @@ router.post("/", authMiddleware, ProductController.addProduct);
  *                   type: string
  *                   example: "Something went wrong"
  */
-router.patch("/:id", authMiddleware, ProductController.updateProduct);
+router.patch("/:id", authMiddleware, uploadImages, ProductController.updateProduct);
 
 export default router;

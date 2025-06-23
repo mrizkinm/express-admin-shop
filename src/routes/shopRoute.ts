@@ -12,8 +12,6 @@ const router = Router();
  *     description: Get shop data information
  *     tags:
  *       - Shop
- *     security:
- *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Shop information
@@ -61,7 +59,7 @@ const router = Router();
  *                   type: string
  *                   example: "Something went wrong"
  */
-router.get("/", authMiddleware, ShopController.getData);
+router.get("/", ShopController.getData);
 
 /**
  * @swagger

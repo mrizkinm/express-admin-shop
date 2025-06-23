@@ -28,7 +28,7 @@ app.use(cookieParser());
 app.use(xssClean());
 app.use(sanitizeMiddleware);
 app.use(express.json());
-app.use(limiter);
+// app.use(limiter);
 app.use(helmet());
 
 app.use((req: Request, res: Response, next: NextFunction) => {

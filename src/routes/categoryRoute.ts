@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { CategoryController } from "../controllers/categoryController";
 import authMiddleware from "../middlewares/authMiddleware";
+import { uploadImages } from "../utils/multer";
 
 const router = Router();
 
@@ -162,7 +163,7 @@ router.get("/:id", authMiddleware, CategoryController.getDetailCategory);
  * /api/category:
  *   post:
  *     summary: Create a new category
- *     description: Adds a new category with a name and an array of images in base64 format.
+ *     description: Adds a new category with a name and an image via FormData.
  *     tags:
  *       - Category
  *     security:
@@ -170,22 +171,21 @@ router.get("/:id", authMiddleware, CategoryController.getDetailCategory);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
+ *             required:
+ *               - name
+ *               - image
  *             properties:
  *               name:
  *                 type: string
  *                 description: The name of the category.
  *                 example: "Metal Build"
- *               images:
- *                 type: array
- *                 maxItems: 1
- *                 items:
- *                   type: string
- *                   format: base64
- *                 description: An array of image data in base64 format.
- *                 example: ["data:image/png;base64,iVBORw0K..."]
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *                 description: The image file for the category.
  *     responses:
  *       200:
  *         description: Category successfully created
@@ -203,7 +203,7 @@ router.get("/:id", authMiddleware, CategoryController.getDetailCategory);
  *                 image:
  *                   type: string
  *                   format: uri
- *                   example: "http://example.com/1739866214580-giv42m.png"
+ *                   example: "http://localhost:3003/uploads/category/1739866214580-giv42m.png"
  *       400:
  *         description: Invalid input
  *         content:
@@ -235,14 +235,14 @@ router.get("/:id", authMiddleware, CategoryController.getDetailCategory);
  *                   type: string
  *                   example: "Something went wrong"
  */
-router.post("/", authMiddleware, CategoryController.addCategory);
+router.post("/", authMiddleware, uploadImages, CategoryController.addCategory);
 
 /**
  * @swagger
  * /api/category/{categoryId}:
  *   patch:
  *     summary: Update category by ID
- *     description: Update category name by providing the ID.
+ *     description: Update category name and image by providing the ID.
  *     tags:
  *       - Category
  *     security:
@@ -257,13 +257,17 @@ router.post("/", authMiddleware, CategoryController.addCategory);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
  *               name:
  *                 type: string
  *                 example: "HG Daban"
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *                 description: Upload a new image file (optional)
  *     responses:
  *       200:
  *         description: Success response
@@ -286,7 +290,7 @@ router.post("/", authMiddleware, CategoryController.addCategory);
  *                   type: string
  *                   example: "Invalid input"
  *       401:
- *         description: "Invalid token"
+ *         description: Invalid token
  *         content:
  *           application/json:
  *             schema:
@@ -306,6 +310,6 @@ router.post("/", authMiddleware, CategoryController.addCategory);
  *                   type: string
  *                   example: "Something went wrong"
  */
-router.patch("/:id", authMiddleware, CategoryController.updateCategory);
+router.patch("/:id", authMiddleware, uploadImages, CategoryController.updateCategory);
 
 export default router;

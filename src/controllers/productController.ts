@@ -29,6 +29,10 @@ export class ProductController {
 
   static async addProduct(req: Request, res: Response, next: NextFunction) {
     try {
+      if (!req.files || req.files.length === 0) {
+        throw new ResponseError(400, { images: "Image is required"} );
+      }
+      
       const result = ProductValidation.addProduct.safeParse(req.body);
 
       if (!result.success) {
@@ -42,7 +46,7 @@ export class ProductController {
         throw new ResponseError(400, simplifiedErrors);
       }
 
-      const response = await ProductService.addProduct(req.body, req.protocol, req.get('host'));
+      const response = await ProductService.addProduct(req.body, req.files as Express.Multer.File[], req.protocol, req.get('host'));
       res.json(response);
     } catch (error) {
       next(error);
@@ -69,7 +73,7 @@ export class ProductController {
         throw new ResponseError(400, simplifiedErrors);
       }
 
-      const response = await ProductService.updateProduct(req.body, productId);
+      const response = await ProductService.updateProduct(req.body, productId, req.files as Express.Multer.File[], req.protocol, req.get('host'));
       res.json(response);
     } catch (error) {
       next(error);

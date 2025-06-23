@@ -60,7 +60,14 @@ export class OrderService {
     const total = await prisma.order.count({ where: whereClause });
     const orders = await prisma.order.findMany({
       where: whereClause,
-      include: { customer: true },
+      include: {
+        customer: true,
+        items: {
+          include: {
+            product: true, // Biar dapet detail produk juga
+          },
+        },
+      },
       skip: skip,
       take: limit,
       orderBy: { createdAt: "asc" },
